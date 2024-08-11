@@ -34,16 +34,29 @@ void even_or_odd_1_10(){
     
 }
 
+void size_of_a_word(std::string wordToEval){
+    std:: cout << "\nEl tamaño de la palabra es de:"<< wordToEval.length();
+
+}
+
 void working_with_word(){
    // si deja usar string sirve de la siguiente forma
 
     std::string word;
+    std::string local_word;
+    local_word = "Hola";
 
     print_char("Ingrese una cadena de caracteres:");
     std:: cin >> word;
 
     std:: cout << word;
-    std:: cout << "\nEl tamaño de la pabra es de:"<< word.length();
+    size_of_a_word(word);
+
+    std:: cout <<"\nLa palabra local es:"<< local_word;
+
+    size_of_a_word(local_word);
+
+
 
  
 }
