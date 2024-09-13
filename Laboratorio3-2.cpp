@@ -467,6 +467,7 @@ Nodo* buscarYGuardar(Matriz* cabeza, string nombreDeEmpresa, int numeroDeEmpresa
 // se encarga de buscar y borrar donde estaba ese contenedor
 void buscarYSacarContenedor(Matriz* cabeza){
     Nodo* pilaEncima = nullptr;
+    Nodo* pilaEncimaInversa = nullptr;
     string empresaContenedor;
     int numeroContenedor;
     
@@ -491,20 +492,28 @@ void buscarYSacarContenedor(Matriz* cabeza){
         // se encuentra el dato
         cout << "Se encontro en:"<< buscado.fila <<"," << buscado.columna << endl;
         // se guardan todos los datos que estaban encima
-        pilaEncima = buscarYGuardar(cabeza, empresaContenedor, numeroContenedor, buscado.columna);
+        pilaEncimaInversa = buscarYGuardar(cabeza, empresaContenedor, numeroContenedor, buscado.columna);
+
+        while (!pila_vacia(pilaEncimaInversa))
+        {
+            Dato datoQueEstabaEncimaInversa;
+            datoQueEstabaEncimaInversa = pop_con_dato(pilaEncimaInversa);
+            push(pilaEncima, datoQueEstabaEncimaInversa, cabeza->maximo);
+        }
+        
         
         int iteradorFilas = cabeza->maximo;
         
         while (!pila_vacia(pilaEncima))
         {
+            Dato datoQueEstabaEncima;
             editarMatriz(cabeza, iteradorFilas, buscado.columna, eliminar);
             iteradorFilas= iteradorFilas - 1;
             cout << "Editando Matriz" << endl;
-            Dato datoQueEstabaEncima;
             datoQueEstabaEncima = pop_con_dato(pilaEncima);
-            int filaAgregar =(buscado.columna % (buscado.columna + 1));
+            int filaAgregar =(buscado.columna +1 % cabeza->maximo);
             cout << filaAgregar << datoQueEstabaEncima.empresa << datoQueEstabaEncima.numero << endl;
-            agregarEnMatriz(cabeza, (buscado.columna % (buscado.columna + 1)), datoQueEstabaEncima);
+            agregarEnMatriz(cabeza, filaAgregar, datoQueEstabaEncima);
             mostrarDatoMatriz(cabeza);
         }
     }
