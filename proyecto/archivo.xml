@@ -1,0 +1,12 @@
+<catalogo>
+    <libro>
+        <titulo>El Quijote</titulo>
+        <autor>Miguel de Cervantes</autor>
+        <precio>19.99</precio>
+    </libro>
+    <libro>
+        <titulo>Don Quixote doflamingo</titulo>
+        <autor>Eichiiro Oda</autor>
+        <precio>1</precio>
+    </libro>
+</catalogo>
