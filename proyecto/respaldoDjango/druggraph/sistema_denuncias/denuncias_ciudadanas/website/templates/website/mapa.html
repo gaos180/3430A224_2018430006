@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapa De Denuncias</title>
+    <style>
+    {% if request.user.is_authenticated %}
+
+        #map {
+            height: 90vh;
+        }
+    {% else %}
+    
+        #map {
+            height: 90vh;
+        }
+        
+    {% endif %}
+    .login-card {
+        width: 100%;
+        max-width: 400px; /* Ancho máximo para el formulario */
+        margin: auto;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+        border-radius: 10px;
+        overflow: hidden;
+        }
+        
+
+        .login-card .card-header-login {
+        background-color: #343a40; /* Fondo oscuro */
+        color: #ffffff; /* Texto blanco */
+        padding: 20px 0;
+        }
+
+        .login-card .card-body-login {
+        padding: 20px;
+        background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Degradado de colores suaves */
+        border-radius: 0 0 10px 10px; /* Esquinas redondeadas en la parte inferior *
+        }
+
+        .login-card .btn-primary {
+        background-color: #007bff; /* Azul primario */
+        border-color: #007bff;
+        }
+
+        .login-card .btn-primary:hover {
+        background-color: #0056b3; /* Azul más oscuro al pasar el ratón */
+        border-color: #0056b3;
+        }
+    </style>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAePnBZc6RcvZGWf0a9twNHbWDxSmln3Gg&callback=initMap" async defer></script>
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+
+</head>
+<body>
+    <style>
+        
+        li{
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+
+    
+    </style>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="{% url 'mapa' %}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="green" class="bi bi-tree-fill" viewBox="0 0 16 16">
+              <path d="M8.416.223a.5.5 0 0 0-.832 0l-3 4.5A.5.5 0 0 0 5 5.5h.098L3.076 8.735A.5.5 0 0 0 3.5 9.5h.191l-1.638 3.276a.5.5 0 0 0 .447.724H7V16h2v-2.5h4.5a.5.5 0 0 0 .447-.724L12.31 9.5h.191a.5.5 0 0 0 .424-.765L10.902 5.5H11a.5.5 0 0 0 .416-.777z"/>
+            </svg>
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-list" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+            </svg>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav ms-auto d-flex align-items-center">
+              {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                  <a class="nav-link text-light">Hola, {{ user.first_name }} {{ user.last_name }}</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link text-light fw-bold btn btn-light rounded" href="{% url 'registro_denuncia' %}" style="background-color: transparent; border-radius: 8px;">Denunciar ahora</a>
+                </li>
+                <li class="nav-item">
+                  <form method="post" action="{% url 'logout' %}" class="d-inline-block">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-light" style="color: #212529;">Cerrar sesión</button>
+                  </form>
+                </li>
+                {% if request.user.is_staff %}
+                  <li class="nav-item">
+                    <a href="{% url 'panel_admin_denuncia' %}" class="nav-link text-light btn-primary text-center" style="background-color: green; border-radius: 8px;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-person-badge-fill" viewBox="0 0 16 16">
+                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm4.5 0a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6m5 2.755C12.146 12.825 10.623 12 8 12s-4.146.826-5 1.755V14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1z"/>
+                      </svg>
+                      Administración
+                    </a>
+                  </li>
+                {% endif %}
+              {% else %}
+                <li class="nav-item">
+                  <a class="nav-link fw-bold btn btn-light" href="{% url 'login' %}" style="border-radius: 8px; color: #212529; padding: 10px 20px;">Iniciar sesión</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link fw-bold border btn text-light" href="{% url 'register' %}" style="border-radius: 8px; padding: 10px 20px;">Crear usuario</a>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </nav>
+      
+    {% block content %}
+    <div class="container-fluid">
+        
+
+
+        <div class="row">
+
+                <!--Div de btn group-->
+                <div class="btn-group-vertical" style="z-index: 2; position: absolute; bottom: 10%; max-width: 100px;">
+                    <!-- Botón para abrir el modal de la leyenda -->
+                    <button type="button" class="btn text-light bg-dark" data-bs-toggle="modal" data-bs-target="#leyendaModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pin-map-fill" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M3.1 11.2a.5.5 0 0 1 .4-.2H6a.5.5 0 0 1 0 1H3.75L1.5 15h13l-2.25-3H10a.5.5 0 0 1 0-1h2.5a.5.5 0 0 1 .4.2l3 4a.5.5 0 0 1-.4.8H.5a.5.5 0 0 1-.4-.8z"/>
+                            <path fill-rule="evenodd" d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999z"/>
+                          </svg>
+                    </button>
+                    
+                    <!-- Botón para abrir el modal de los botones de filtro -->
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#filtroModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel-fill" viewBox="0 0 16 16">
+                            <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/>
+                          </svg>
+                    </button>
+                    {% if request.user.is_authenticated %}
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#denunciasUsuarios">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-bookmark-fill" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M6 1h6v7a.5.5 0 0 1-.757.429L9 7.083 6.757 8.43A.5.5 0 0 1 6 8z"/>
+                            <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+                            <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+                          </svg>
+                    </button>     
+                    {% endif %}
+                </div>
+
+            <!--Modal denuncias usuario-->
+            <div id="denunciasUsuarios" class="modal" tabindex="-1" aria-hidden="false">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2> Tus denuncias</h2>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Titulo
+                                            </th>
+                                            <th>
+                                                Estado
+                                            </th>
+                                            <th>
+                                                Fecha
+                                            </th>    
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% csrf_token %}
+                                        {% for denuncia in denuncias %}
+                                            {% if denuncia.username == user %}
+                                            <tr>
+                                                <td>
+                                                    Denuncia: {{denuncia.titulo}}
+                                                </td>
+                                                <td>
+                                                    {% if denuncia.estado == 0 %}
+                                                    En revision
+                                                    {% elif denuncia.estado == 1 %}
+                                                    En procedimiento
+                                                    {% elif denuncia.estado == 2 %}
+                                                    Finalizada
+                                                    {% elif denuncia.estado == 3 %}
+                                                    Rechazada
+                                                    {% elif denuncia.estado == 4 %}
+                                                    Deshabilitada o cancelada
+                                                {% endif %}
+    
+                                                </td>
+                                                <td>
+                                                    {{denuncia.fecha_suceso}}
+    
+                                                </td>
+                                                {% endif %}
+    
+                                            </tr>
+                                                
+            
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                          </div>                    
+                    </div>
+                </div>
+            </div>
+
+            <div class="">
+                <div id="map" class="card"></div>
+            </div>
+            <!--Modal Denuncia especifica-->
+            <div id="denunciaModal" class="modal" tabindex="-1" aria-hidden="false">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 id="denunciaTitle"></h2>
+                            <span class="close btn-close"></span>
+                        </div>
+                        <div class="modal-body">
+                            <p id="denunciaDescription"></p>
+                            <img id="denunciaImage" src="" alt="imagen:" style="max-width: 64px; max-height:64px;">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" id="botonCerrar"> Cerrar </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+<!-- Modal para Leyenda -->
+<div class="modal fade" id="leyendaModal" tabindex="-1" aria-labelledby="leyendaModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="leyendaModalLabel">Leyenda</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="leyenda">
+            <div class="card">
+                
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% if request.user.is_staff %}
+                        <li class="list-group-item">
+                            <img src="https://developers.google.com/static/maps/documentation/javascript/images/symbol_circle.png"> Estado: invisible para usuario
+                        </li>
+                        {% endif %}
+                        
+                        <li class="list-group-item">
+                            <img src="https://developers.google.com/static/maps/documentation/javascript/images/symbol_fore_open.png"> Estado: En procedimiento
+                        </li>
+                        <li class="list-group-item">
+                            <img src="https://developers.google.com/static/maps/documentation/javascript/images/symbol_back_close.png"> Estado: Finalizada
+                        </li>
+                        <li class="list-group-item">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAADICAMAAAA9W+hXAAAAA1BMVEX6Ly+m5M7oAAAANElEQVR4nO3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAN1+AABVhDU2QAAAABJRU5ErkJggg==" style="width: 24px;height: 24px ; border-radius:9999px;">
+                            Categoria: Lugar de explotación
+                        </li>
+                        <li class="list-group-item">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPKZ1yt_IyVF1G4sFaUN1qf2Mp_tR-TUpBaw&s" style="width: 24px;height: 24px ; border-radius:9999px;">
+                            Categoria: Uso y/o contaminación de recursos naturales
+                        </li>
+                        <li class="list-group-item">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAGFBMVEUpYv/a18308u3q7v8AVP/p5+H+//8ARP8TtSxnAAABH0lEQVR4nO3PCQ2EABAAMX78Oz4IORGzaR10Wadb1nOb7HyG27XPdW3vcL+Pqe79Gx7LVIdhnmGfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYZ9hn2GfYd9/eB9T3d/w2ue63uG5TXY+w+l+h1EihcbqknUAAAAASUVORK5CYII=" style="width: 24px;height: 24px ; border-radius:9999px;">
+                            Categoria: Residuos, emisiones e inmisiones
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Botones de Filtro -->
+<div class="modal fade" id="filtroModal" tabindex="-1" aria-labelledby="filtroModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filtroModalLabel">Filtros</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" id="filterSelect" onchange="handleFilterChange()">
+                    <option value="all">Mostrar Todos</option>
+                    <option value="Lugar de explotación">Lugar de explotación</option>
+                    <option value="Uso y/o contaminación de recursos naturales">Uso y/o contaminación de recursos naturales</option>
+                    <option value="Residuos, emisiones e inmisiones">Residuos, emisiones e inmisiones</option>
+                    {% if request.user.is_staff %}
+                    <option value="estado_0">En revisión</option>
+                    <option value="estado_3">Rechazada</option>
+                    <option value="estado_4">Deshabilitada</option>
+                    {% endif %}
+                    <option value="estado_1">En procedimiento</option>
+                    <option value="estado_2">Finalizada</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Script para que sea filtro en select-->
+<script>
+    function handleFilterChange() {
+        var select = document.getElementById('filterSelect');
+        var value = select.value;
+
+        if (value === 'all') {
+            filterMapByCausa('all');
+        } else if (value === 'Lugar de explotación') {
+            filterMapByCausa('Lugar de explotación');
+        } else if (value === 'Uso y/o contaminación de recursos naturales') {
+            filterMapByCausa('Uso y/o contaminación de recursos naturales');
+        } else if (value === 'Residuos, emisiones e inmisiones') {
+            filterMapByCausa('Residuos, emisiones e inmisiones');
+        } else if (value === 'estado_0') {
+            filterMapByEstado(0);
+        } else if (value === 'estado_3') {
+            filterMapByEstado(3);
+        } else if (value === 'estado_4') {
+            filterMapByEstado(4);
+        } else if (value === 'estado_1') {
+            filterMapByEstado(1);
+        } else if (value === 'estado_2') {
+            filterMapByEstado(2);
+        }
+    }
+</script>
+
+<!--Script principal del mapa-->
+<script>
+    let map;
+    let markers = [];
+
+    function initMap(data) {
+        var mapOptions = {
+            center: { lat: -35.405338287353516, lng: -71.6393814086914 },
+            zoom: 14
+        };
+        map = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+        // Add user geolocation
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    var userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setCenter(userLocation);
+
+                    var userMarker = new google.maps.Marker({
+                        position: userLocation,
+                        map: map,
+                        title: "Tu ubicación",
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 8,
+                            fillColor: '#4285F4',
+                            fillOpacity: 0.8,
+                            strokeColor: '#4285F4',
+                            strokeWeight: 2
+                        }
+                    });
+                },
+                function() {
+                    handleLocationError(true, map.getCenter());
+                }
+            );
+        } else {
+            handleLocationError(false, map.getCenter());
+        }
+
+        addMarkers(data);
+    }
+
+    function addMarkers(data, admin) {
+        clearMarkers();
+
+        for (const denuncia of data) {
+            let markerColor;
+            switch (denuncia.causa) {
+                case 'Lugar de explotación':
+                    markerColor = 'red';
+                    break;
+                case 'Uso y/o contaminación de recursos naturales':
+                    markerColor = 'green';
+                    break;
+                case 'Residuos, emisiones e inmisiones':
+                    markerColor = 'blue';
+                    break;
+                default:
+                    markerColor = 'blue';
+            }
+
+            let markerPath;
+            switch (denuncia.estado) {
+                case 0:
+                    markerPath = google.maps.SymbolPath.CIRCLE;
+                    break;
+                case 1:
+                google.maps.SymbolPath.CIRCLE
+                    markerPath = google.maps.SymbolPath.FORWARD_OPEN_ARROW;
+                    break;
+                case 2:
+                    markerPath = google.maps.SymbolPath.BACKWARD_CLOSED_ARROW;
+                    break;
+                case 3:
+                    markerPath = google.maps.SymbolPath.CIRCLE;
+                    break;
+                case 4:
+                    markerPath = google.maps.SymbolPath.CIRCLE;
+                    break;
+
+            }
+            if(!admin){
+                if(denuncia.estado===1 || denuncia.estado===2){
+                    const marker = new google.maps.Marker({
+                        position: { lat: denuncia.latitude, lng: denuncia.longitude },
+                        map: map,
+                        title: denuncia.asunto,
+                        icon: {
+                            path: markerPath,
+                            fillColor: markerColor,
+                            fillOpacity: 0.8,
+                            strokeColor: 'black',
+                            strokeWeight: 2,
+                            scale: 5
+                        }
+                    });
+
+                    marker.addListener('click', function() {
+                        showMoreInfo(denuncia);
+                    });
+            
+                    markers.push(marker);
+                
+                }
+            }else{
+                const marker = new google.maps.Marker({
+                    position: { lat: denuncia.latitude, lng: denuncia.longitude },
+                    map: map,
+                    title: denuncia.asunto,
+                    icon: {
+                        path: markerPath,
+                        fillColor: markerColor,
+                        fillOpacity: 0.8,
+                        strokeColor: 'black',
+                        strokeWeight: 2,
+                        scale: 5
+                    }
+                });
+                    
+                marker.addListener('click', function() {
+                    showMoreInfo(denuncia);
+                });
+        
+                markers.push(marker);
+            }    
+        }
+    
+    }
+    
+
+    function clearMarkers() {
+        for (let marker of markers) {
+            marker.setMap(null);
+        }
+        markers = [];
+    }
+
+    function filterMapByCausa(causa) {
+        fetch('/api/denuncias/')
+            .then(response => response.json())
+            .then(data => {
+                let admin = false;
+                {% if request.user.is_staff %}
+                admin = true
+                {% else %}
+                admin = false
+                {% endif %}
+                console.log("Admin")
+                console.log(admin)
+                if (causa === 'all') {
+                    addMarkers(data, admin);
+                } else {
+                    const filteredData = data.filter(denuncia => denuncia.causa === causa);
+                    addMarkers(filteredData, admin);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function filterMapByEstado(estado) {
+        fetch('/api/denuncias/')
+            .then(response => response.json())
+            .then(data => {
+                let admin = false;
+                {% if request.user.is_staff %}
+                admin = true
+                {% else %}
+                admin = false
+                {% endif %}
+                const filteredData = data.filter(denuncia => denuncia.estado === estado);
+                addMarkers(filteredData, admin);
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function handleLocationError(browserHasGeolocation, pos) {
+        var infoWindow = new google.maps.InfoWindow({
+            content: browserHasGeolocation
+                ? 'Error: El servicio de geolocalización falló.'
+                : 'Error: Tu navegador no soporta geolocalización.',
+            position: pos
+        });
+        infoWindow.open(map);
+    }
+
+    function showMoreInfo(denuncia) {
+        var modal = document.getElementById("denunciaModal");
+        var titleElement = document.getElementById("denunciaTitle");
+        titleElement.textContent = denuncia.titulo;
+
+        var descriptionElement = document.getElementById("denunciaDescription");
+        
+        var imagenURL = denuncia.imagen;
+        var descriptionImage = document.getElementById("denunciaImage");
+        descriptionImage.innerHTML = `<img src="${imagenURL}" style="max-width: 64px; max-height:64px;">`;
+
+        descriptionElement.textContent = "Causa: " + denuncia.causa + " | Asunto: " + denuncia.asunto;
+
+        modal.style.display = "block";
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/denuncias/')
+            .then(response => response.json())
+            .then(data => {
+                filterMapByCausa("all", admin=false);
+            })
+            .catch(error => console.error('Error:', error));
+
+        var closeButton = document.getElementsByClassName("close")[0];
+        closeButton.addEventListener("click", function() {
+            var modal = document.getElementById("denunciaModal");
+            modal.style.display = "none";
+        });
+
+        window.addEventListener("click", function(event) {
+            var modal = document.getElementById("denunciaModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+            var closeBtn = document.querySelector("#botonCerrar");
+            closeBtn.onclick = function() {
+                modal.style.display = "none";
+            }
+        });
+    });
+</script>
+
+
+    {% endblock content %}
+</body>
+{% bootstrap_javascript %}
+
+
+</html>

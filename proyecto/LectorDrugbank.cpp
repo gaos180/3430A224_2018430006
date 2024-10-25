@@ -4,6 +4,10 @@
 
 using namespace std;
 
+// para compilar:
+// g++ LectorDrugbank.cpp -o LectorXML -ltinyxml2
+// [g++] nombre.cpp -o ejecutable -librería añadida
+
 /*
 se carga los datos de los archivos xml de la siguiente forma
 <drugbank>
@@ -25,10 +29,8 @@ de los elementos
 
 */
 
-
-
-int main() {
-    // se genera el elemento xml llamado doc
+int recorrerXML(){
+// se genera el elemento xml llamado doc
     tinyxml2::XMLDocument doc;
 
     // si la carga no es exitosa saldrá el error
@@ -57,11 +59,66 @@ int main() {
         cout << "drugbankID: " << drugbankID << endl;
         cout << "nombre: " << name << endl;
         cout << "Descripcion: " << description << endl;
+
+        // Para leer datos de más profundidad de los fármacos hay que hacer una llamada al data con lo
+        // de first Child, para ello sería otro ciclo con while distnto a nullptr
+
+        // verifica si hay targets, en caso de que haya la base de datos está hecha para que solo haya un targets
+        tinyxml2::XMLElement* targets = drug->FirstChildElement("targets");
+        
+
+        if (targets!=nullptr)
+        {
+            cout << "Hay targets" << endl;
+
+            // si hay targets habrá al menos un target, pero puede haber más de uno por ello
+            tinyxml2::XMLElement* target = targets->FirstChildElement("target");
+
+            // hay que recorrer los target
+            while (target != nullptr) {
+                const char* targetSpecificDrugName = target->FirstChildElement("name")->GetText();
+
+
+                cout << "nombre del Target: " << targetSpecificDrugName << endl;
+                
+                tinyxml2::XMLElement* polypeptide = target->FirstChildElement("polypeptide");
+                if (polypeptide != nullptr)
+                {   
+                    cout << "Hay polipetidos" << endl;
+                    const char* targetSpecificDrugPolyptideAminoAcid = polypeptide->FirstChildElement("amino-acid-sequence")->GetText();
+                    const char* targetSpecificDrugPolyptideGeneSequence = polypeptide->FirstChildElement("gene-sequence")->GetText();
+                    if (targetSpecificDrugPolyptideAminoAcid != nullptr)
+                    {
+                        cout << "Secuencia aminoacidica del target: " << targetSpecificDrugPolyptideAminoAcid << endl;
+                    }
+                    if (targetSpecificDrugPolyptideGeneSequence != nullptr)
+                    {
+                      cout << "Secuencia genetica del target" << targetSpecificDrugPolyptideGeneSequence << endl;
+                    }
+                }
+
+                target = target->NextSiblingElement("target");
+            }
+
+        }else
+        {
+            // se lee mejor si se piensa que lo está leyendo Gru de mi villano favorito
+            cout << "En terminos de targets, no tenemos targets" << endl;
+        }
+        
+
         cout << "-------------------" << endl;
 
         // siguiente elemento hermano, es decir siguiente elemento del mismo tipo
-        drug = drug->NextSiblingElement("drug"); // Pasar al siguiente libro
+        drug = drug->NextSiblingElement("drug"); // Pasar a la siguiente droga
     }
-
     return 0;
+}
+
+
+
+int main() {
+    int retorno;
+    retorno=recorrerXML();
+    return retorno;
 }

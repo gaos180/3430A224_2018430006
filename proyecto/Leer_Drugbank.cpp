@@ -4,6 +4,10 @@
 
 using namespace std;
 
+// para compilar:
+// g++ LectorXML.cpp -o LectorXML -ltinyxml2
+// [g++] nombre.cpp -o ejecutable -librería añadida
+
 /*
 se carga los datos de los archivos xml de la siguiente forma
 <drugbank>
@@ -25,8 +29,41 @@ de los elementos
 
 */
 
+// contador
+int main() {
+    // se genera el elemento xml llamado doc
+    tinyxml2::XMLDocument doc;
+    int contador=0;
+
+    // si la carga no es exitosa saldrá el error
+    if (doc.LoadFile("full_database.xml") != tinyxml2::XML_SUCCESS) {
+        cerr << "Error al cargar el archivo XML" << endl;
+        return -1;
+    }
 
 
+    // le damos el primer elemento dueño de los demás, en este caso es drugbank
+    tinyxml2::XMLElement* drugbankData = doc.FirstChildElement("drugbank");
+    if (drugbankData == nullptr) {
+        cerr << "No se encontró el elemento drugbankData" << endl;
+        return -1;
+    }
+
+    // se carga el elemento de drugas y se asigna, estando dentro de la data de drugbank
+    tinyxml2::XMLElement* drug = drugbankData->FirstChildElement("drug");
+    while (drug != nullptr) {
+        contador++;
+        // datos de interes
+
+        // siguiente elemento hermano, es decir siguiente elemento del mismo tipo
+        drug = drug->NextSiblingElement("drug"); // Pasar al siguiente libro
+    }
+
+    cout<< "Cantidad de veces que entro es de: "<< contador << endl;
+    return 0;
+}
+
+/*
 int main() {
     // se genera el elemento xml llamado doc
     tinyxml2::XMLDocument doc;
@@ -65,3 +102,4 @@ int main() {
 
     return 0;
 }
+*/

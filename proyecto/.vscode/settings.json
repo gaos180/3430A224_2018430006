@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "django": "html",
+        "typeinfo": "cpp",
+        "string": "cpp"
+    }
+}
