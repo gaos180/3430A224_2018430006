@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "django": "html",
+        "ratio": "cpp"
+    }
+}
