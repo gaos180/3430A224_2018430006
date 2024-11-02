@@ -1,9 +1,15 @@
 #include <stdlib.h>
 #include <iostream>
 
+// sleep para pruebas
+#include <unistd.h>
+
 // para randoms
 #include <cstdlib>
 #include <ctime>
+
+// para raíz
+#include <cmath>
 
 
 /*
@@ -192,68 +198,169 @@ void busquedaCuadratica(int arrayHash[], int numero, int posicion, int n){
 }
 
 
-// no solucionado aún
-// Problema del doble hash == solo revisa 2n al hacer doble hash
+/* Solucionado agregando otra forma de verificar
+// Problema del doble hash == solo revisa 2n desde la posición al hacer doble hash
 // por ejemplo 25, 43, ,56, 35, 54, 13, 80, 104, || estos siguientes numeros escogidos: 23, 33, dará error
 // dara error porque en ningún momento visitará el lugar libre al ir de 2 en 2. Solución propuesta, que sea de 3 en 3
 // al ser impar hará que se vaya rotando si da la vuelta completa
 // ( (D +1)% n + 1) % n
-void reasignacionHashDD(int arrayHash[], int numero, int posicion, int n){
+// esta solución no sirve ya que puede ser menor a 3 y dará error
+// muestra que si n/j siendo j el avance, mientras n sea divisible por J provoca que deje de actuar bien el hash
+Por lo que hay opciones, que cada x ciclos por ejemplo cuando un contador de búsqueda sea = n/2 se cambie el hash
+para que se mueva a otro, o usar un número primo como clave (creo que por esto se usa los primos 
+para hacer hash en tarjetas de créditos y porque es tan importante el descubrir números primos).
+
+*/
+void reasignacionHashDD(int arrayHash[], int numero, int posicion, int n, int primoMenor){
     //int D = hashNumero(hashNumero(posicion, n), n); // da error porque el doble hash es par y avanza de 2 en 2
     
     // ya tiene un hash la posición, entonces aquí tiene dos
-    int D = ((((posicion + 1) % n) + 1 ) % n)+1 %n ;
+    // ya que debe ser doble hash iniciaremos con la condición sea doble hash
+
+    // ya tiene el hash la posicion, así que doble hash es hacerle hash de nuevo
+    int D = hashNumero(posicion, n);
+    int contador = 1;
+
     cout << "Hubo colisión en: " << posicion << ", entro a la reasignación doble Hash" << endl;
 
     
+    
     while (true)
     {
-        // revisa la posición + i², va iterando usando k
-        if ( arrayHash[D] == -1)
+        if (contador > (n/2))
         {
-            cout << "Fue reasignado en " << D << endl;
-            arrayHash[D] = numero;
-            break; // lo guardo se rompe el ciclo
+            // testeo de D, cuando pasa ya buscando la mitad del ciclo
+            // cout << "D es: " << D << endl;
+            // sleep(1);
+            D = (D + primoMenor) %n;
+            if ( arrayHash[D] == -1)
+            {
+                cout << "Fue reasignado en " << D << endl;
+                arrayHash[D] = numero;
+                break; // lo guardo se rompe el ciclo
+            }
+
         }else{
-            D = ((D + 1) % n + 1) % n;
-            //D = hashNumero(hashNumero(D, n), n);
+            // revisa la posición de los hash
+            if ( arrayHash[D] == -1)
+            {
+                cout << "Fue reasignado en " << D << endl;
+                arrayHash[D] = numero;
+                break; // lo guardo se rompe el ciclo
+            }else{
+                // doble hash
+                D = hashNumero((hashNumero(D, n)), n);
+            }
+            contador++;
+
         }
+
     }
 
 }
 
-void busquedaHashDD(int arrayHash[], int numero, int posicion, int n){
-    int D = ((posicion + 1 % n) + 1 ) % n;
-
+void busquedaHashDD(int arrayHash[], int numero, int posicion, int n, int primoMenor){
+    
     if (numero > n)
     {
         cout << "Es un número mayor de los posibles" << endl;
         return; // tiene un return para evitar que se recorra
     }
+    
+    int D = hashNumero(posicion, n);
 
-    if (arrayHash[posicion] == numero)
-        cout << "Se encontro el número en la posicion:" << posicion << endl;
-    else{
-        cout << "Se busca el numero: " << numero << endl;
-
-        for (int i = 0; i < n; i++)
-        {
-            cout << "Hubo colisión en: " << posicion << ", entro a la reasignación DobleHash" << endl;
-            if (arrayHash[D] == numero)
-            {
-                cout << "Fue encontrado en " << D << endl;
-                return;
-            }
-        }
-        cout << "No se encuentra el número" << endl;
+    // para comprobar si todos han sido visitados
+    int arrayVisitados[n];
+    
+    for (int i = 0; i < n; i++)
+    {
+        arrayVisitados[i] = -1;
     }
 
+    int contador = 1;
+
+    cout << "Iniciando la busqueda en: " << posicion << " con la reasignación doble Hash" << endl;
+    if (arrayHash[posicion])
+    {
+        cout << "Se encontro el número en la posicion:" << posicion << endl;
+    }else{
+        while (true)
+        {
+            if (contador > (n/2))
+            {
+                // testeo de D, cuando pasa ya buscando la mitad del ciclo
+                // cout << "D es: " << D << endl;
+                // sleep(1);
+                D = (D + primoMenor) %n;
+                if ( arrayHash[D] == numero)
+                {
+                    cout << "Fue encontrado en " << D << endl;
+                    arrayHash[D] = numero;
+                    break; // lo guardo se rompe el ciclo
+                }
+                arrayVisitados[D] = 1;
+
+
+            }else{
+                // revisa la posición de los hash
+                if ( arrayHash[D] == numero)
+                {
+                    cout << "Fue encontrado en " << D << endl;
+                    arrayHash[D] = numero;
+                    break; // lo guardo se rompe el ciclo
+                }else{
+                    arrayVisitados[D] = 1;
+                    // doble hash
+                    D = hashNumero((hashNumero(D, n)), n);
+                }
+                contador++;
+
+            }
+            if (compruebaArrayVisitados)
+            {
+                cout << "No se encuentra el número" << endl;
+                break;
+            }
+
+        }
+
+    }
+    
+    
 }
 
-
+// hace hash a un número
 int hashNumero(int numero, int n){
     return (numero % n ) +1;
 }
+
+
+// función para saber si un número es primo
+bool esPrimo(int num) {
+    if (num <= 1) {
+        return false;
+    }
+    for (int i = 2; i <= sqrt(num); ++i) {
+        if (num % i == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// va reduciendo n para hallar el menor más cercano
+int primoMenorCercano(int n) {
+    while (n > 1) {
+        // debe ser aquí el menos, para que no inicie desde n si n es el primo
+        n--;
+        if (esPrimo(n)) {
+            return n;
+        }
+    }
+    return -1; // Si no se encuentra ningún primo menor o igual a n para dar un valor negativo
+}
+
+
 
 // para usar el switch tanto en trabajar como para buscar, usando un booleano
 void trabajoHash(char opc, int array[], int arrayHash[], int n, bool flag){
@@ -318,16 +425,22 @@ void trabajoHash(char opc, int array[], int arrayHash[], int n, bool flag){
         
         case 'D':
             // Lógica para la opción 'D'
-
+            int primoMenor;
+            primoMenor = primoMenorCercano(n);
+            // Para el caso en que sea 1, así el hash será 1
+            if(primoMenor == -1)
+                primoMenor = n;
+            
             cout << "Opción D seleccionada para colisiones" << endl;
             if (flag)
             {
                 for (int i = 0; i < n; i++)
                 {   
+                    
                     k = hashNumero(array[i], n);
                     cout << "K:" << k << endl;
                     if (arrayHash[k] != -1)
-                        reasignacionHashDD(arrayHash, array[i], i, n);
+                        reasignacionHashDD(arrayHash, array[i], i, n, primoMenor);
                     else
                         arrayHash[k] = array[i];
                     
@@ -337,7 +450,7 @@ void trabajoHash(char opc, int array[], int arrayHash[], int n, bool flag){
                 cout << "Ingrese su número a buscar:" << endl;
                 cin >> numeroBuscado;
                 k = hashNumero(numeroBuscado, n);
-                busquedaHashDD(arrayHash, numeroBuscado, k, n);
+                busquedaHashDD(arrayHash, numeroBuscado, k, n, primoMenor);
             }
             
             
@@ -350,6 +463,8 @@ void trabajoHash(char opc, int array[], int arrayHash[], int n, bool flag){
 
 
 }
+
+
 
 
 int main(int argc, char **argv) {
