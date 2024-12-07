@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream> // Para usar ofstream
-#include <cstdlib>  // Para usar malloc y free
+#include <cstdlib> // Para usar system
 
 using namespace std;
 
