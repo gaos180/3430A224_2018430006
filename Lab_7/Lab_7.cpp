@@ -1,408 +1,260 @@
-#include <stdlib.h>
 #include <iostream>
-#include <climits> // permite el uso de INT_MAX
-#include <fstream>
-
-// para randoms
-#include <cstdlib>
-#include <ctime>
-
-/*
- * g++ Lab_6.cpp -o matriz_lab6
- * su ejecución es con
- * ./matriz [numero]
- * así se hace el tamaño de la matriz
- */
+#include <fstream> // Para usar ofstream
+#include <cstdlib>  // Para usar malloc y free
 
 using namespace std;
 
-// Usar INT_MAX me permite colocarle el máximo en caso de al arreglo.
-// Ya que c no permite no definir el tamaño de un arreglo antes
-void leer_nodos (string vector[], int n) {
-  int i;
-  int inicio = 97; // usa ascii desde el 97 para abcd...etc.
-  
-  for (i=0; i<n; i++) {
-    vector[i] = inicio+i;
-  }
-}
+// Laboratorio 7 (Nota menor) - POA
+// Nombre: Gabriel Rojas
 
-void imprimir_vector_entero(int vector[], int n) {
-    int i;
-    for (i=0; i<n; i++) {
-        printf ("D[%d]: %d ", i, vector[i]);
-    }
-    printf ("\n");
-}
+/*
+Este programa ha sido realizado como parte de la POA de ayED
+*/
 
-// inicializa un vector. recibe el vector como un puntero.
-void inicializar_vector_caracter (string *vector, int n) {
-    int col;
-  
-    // recorre el vector.
-    for (col=0; col<n; col++) {
-        vector[col] = ' ';
-    }
-}
+// Clase para representar un grafo no dirigido
+class Graph {
+// Atributos de la clase
+private:
+                       // Puestos así porque se ve más bonito (solo aquí)
+    int** matrix_ad;  // Matriz de adyacencia
+    int num_nodes;   // Número de nodos
 
-// imprime un vector. recibe el vector como un puntero.
-void imprimir_vector_caracter(string *vector, int n) {
-    cout << endl;
-    for (int i=0; i<n; i++) {
-        cout << "|" << "vector[" << i << "]: " << vector[i] << "|";
-    }
-    cout << endl;
-}
-
-// inicializa matriz nxn. recibe puntero a la matriz.
-void inicializar_matriz_enteros (int **matriz, int n) {
-    for (int fila=0; fila<n; fila++) {
-        for (int col=0; col<n; col++) {
-            matriz[fila][col] = -1;
+public:
+    // Constructor para inicializar el grafo
+    Graph(int n) : num_nodes(n) {
+        // Reservar memoria para la matriz de adyacencia
+        matrix_ad = new int*[n];
+        for (int i = 0; i < n; ++i) {
+            matrix_ad[i] = new int[n];
         }
     }
-}
 
-void cambio_random_matriz_enteros(int **matriz, int n) {
-    srand(time(NULL));
-    for (int fila=0; fila<n; fila++) {
-        for (int col=0; col<n; col++) {
-            if (col == fila )
-            {
-                matriz[fila][col] = 0;
-            }else{
-                int valor_aleatorio1 = rand() % 2;
-                if (valor_aleatorio1 == 0)
-                {
-                    int valor_aleatorio = rand() % 100 + 1;
-                    matriz[fila][col] = valor_aleatorio;
-                }else{
-                    matriz[fila][col] = -1;
+    /* Destructor para liberar memoria
+    El "~" significa que es un destructor para la clase. Así como el 
+    constructor es un método especial que se llama cuando se crea un objeto, 
+    el destructor es un método especial que se llama cuando se destruye un objeto
+    */ 
+    ~Graph() {
+        for (int i = 0; i < num_nodes; ++i) {
+        delete[] matrix_ad[i];
+        }
+        delete[] matrix_ad;
+    }
+
+    // Método para leer los datos desde la entrada estándar o usar un ejemplo
+    void readGraph(bool flag = false) {
+        if (num_nodes == 5 && flag) {
+            int example_graph[5][5] = {
+                {0, 2, -1, 6, -1},
+                {2, 0, 3, 8, 5},
+                {-1, 3, 0, -1, 7},
+                {6, 8, -1, 0, 9},
+                {-1, 5, 7, 9, 0}
+            };
+            for (int i = 0; i < num_nodes; ++i) {
+                for (int j = 0; j < num_nodes; ++j) {
+                    matrix_ad[i][j] = example_graph[i][j];
                 }
-                
+            }
+            cout << "Usando matriz de ejemplo para n = 5.\n";
+        } else {
+            cout << "Ingrese la matriz de distancias (usar -1 para infinito):\n";
+            for (int i = 0; i < num_nodes; ++i) {
+                for (int j = 0; j < num_nodes; ++j) {
+                    cout << "Distancia entre " << i << " y " << j << ": ";
+                    cin >> matrix_ad[i][j];
+                }
             }
         }
     }
-}
 
-void modo_prueba(int **matriz, int n, string vector[]) {
-    int M[n][n] = {{ 0, 4, 11, -1, -1},
-                 {-1, 0, -1,  6,  2},
-                 {-1 ,3,  0,  6, -1},
-                 {-1,-1, -1,  0, -1},
-                 {-1,-1,  5,  3,  0}};
+    // Método para generar un archivo Graphviz del grafo original
+    void generateOriginalGraph() const {
+        ofstream file("original_graph.dot");
+        file << "graph G {\n";
+        file << "graph [rankdir=LR];\n";
+        file << "node [shape=circle style=filled fillcolor=\"#00ff005f\"];\n";
 
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            matriz[i][j] = M[i][j];
-        }
-    }
-}
-
-void cambio_manual_matriz_enteros(int **matriz, int n, string vector[INT_MAX]) {
-    for (int fila = 0; fila < n; fila++) {
-        for (int col = 0; col < n; col++) {
-            if (fila == col)
-            {
-                matriz[fila][col] = 0;
-            }else{
-            cout << "Ingrese el valor para la interacción de los nodos " << vector[fila] << " con el nodo " << vector[col] << ": ";
-            cin >> matriz[fila][col];
+        for (int i = 0; i < num_nodes; ++i) {
+            for (int j = i + 1; j < num_nodes; ++j) {
+                if (matrix_ad[i][j] != -1) {
+                    file << "  " << i << " -- " << j
+                         << " [label=\"" << matrix_ad[i][j] << "\"];\n";
+                }
             }
         }
-    }
-}
+        file << "}\n";
+        file.close();
 
-// imprime matriz.
-void imprimir_matriz(int **matriz, int n) {
-    cout << endl;
-    for (int fila=0; fila<n; fila++) {
-        for (int col=0; col<n; col++) {
-            cout << "|" << matriz[fila][col] << "|";
+        // Generar imagen del grafo original
+        cout << "Archivo 'original_graph.dot' generado.\n";
+        system("dot -Tpng original_graph.dot -o original_graph.png");
+        system("eog original_graph.png");
+    }
+
+    // Método para aplicar el algoritmo de Prim y generar el árbol mínimo
+    void prim() {
+
+        // Arreglo para saber si un nodo está en U
+        bool* inU = new bool[num_nodes];
+        
+        // Arreglo para almacenar las aristas del árbol mínimo
+        int** L = new int*[num_nodes - 1];
+        for (int i = 0; i < num_nodes - 1; ++i) {
+            L[i] = new int[2];
         }
-        cout << endl;
-    }
-}
 
-void inicializar_vector_D(int D[], int **M, int n) {
-    for (int col = 0; col < n; col++) {
-        D[col] = M[0][col];  // Acceso a los elementos de la matriz como puntero a puntero
-    }
-}
+        // Inicializar los arreglos
+        for (int i = 0; i < num_nodes; ++i) inU[i] = false;
 
-void agrega_vertice_a_S(string S[], char vertice, int n) {
-  int i;
-  // recorre buscando un espacio vacio, me daba error el S[0]. no sé pq funciona con [i][0].
-    for (i=0; i<n; i++) {
-        if (S[i][0]  == ' ') {
-            S[i] = vertice;
+        inU[0] = true;  // Nodo inicial
+        int uCount = 1;
+        int lCount = 0;
+        int total_cost = 0;
+
+        // Mientras no se hayan agregado todos los nodos
+        while (uCount < num_nodes) {
+            int minCost = -1;
+            int u = -1, v = -1;
+
+            // Buscar la arista de menor costo (u, v)
+            for (int i = 0; i < num_nodes; ++i) {
+                // Si el nodo i está en U
+                if (inU[i]) {
+                    for (int j = 0; j < num_nodes; ++j) {
+                        // Si el nodo j no está en U y hay una arista (i, j)
+                        if (!inU[j] && matrix_ad[i][j] != -1 && (minCost == -1 || matrix_ad[i][j] < minCost)) {
+                            minCost = matrix_ad[i][j];
+                            u = i;
+                            v = j;
+                        }
+                    }
+                }
+            }
+
+            // Agregar la arista (u, v) al árbol
+            if (u != -1 && v != -1) {
+                L[lCount][0] = u;
+                L[lCount][1] = v;
+                ++lCount;
+
+                inU[v] = true;
+                ++uCount;
+
+                total_cost += minCost;
+            }
+        }
+
+        cout << "Aristas seleccionadas (L):\n";
+        for (int i = 0; i < lCount; ++i) {
+            cout << L[i][0] << " -- " << L[i][1] << "\n";
+        }
+        cout << "Costo total del árbol abarcador mínimo: " << total_cost << "\n";
+
+        generateGraphCostMin(L, lCount);
+
+        // Libera el arreglo dinámico inU
+        delete[] inU; 
+        for (int i = 0; i < num_nodes - 1; ++i) {
+            // Libera cada subarreglo de L
+            delete[] L[i]; 
+        }
+        delete[] L;
+    }
+
+    // Método para generar el archivo Graphviz del árbol de expansión mínima
+    void generateGraphCostMin(int** L, int lCount) const {
+        cout <<"generando archivo de grafo minimo\n";
+        ofstream file("graph_min_cost.dot");
+        file << "graph G {\n";
+        file << "graph [rankdir=LR];\n";
+        file << "node [shape=circle style=filled fillcolor=\"#00ff005f\"];\n"; // Square para diferenciarlo del grafo original
+        for (int i = 0; i < lCount; ++i) {
+            int u = L[i][0];
+            int v = L[i][1];
+            int label = matrix_ad[u][v];
+            cout << "test " << u << " " << v << " " << label << "\n";
+            file << "  " << L[i][0] << " -- " << L[i][1] << " [label=\"" << label <<"\"]" << ";\n";
+        }
+        file << "}\n";
+        file.close();
+        cout << "Archivo 'graph_min_cost.dot' generado.\n";
+
+        // Generar imagen del árbol de expansión mínima
+        system("dot -Tpng graph_min_cost.dot -o graph_min_cost.png");
+        system("eog graph_min_cost.png");
+    }
+    
+    // Método para ver la matriz original
+    void seeOriginalMatrix(){
+        system("eog original_graph.png");
+    }
+
+    // Método para ver la matriz de minimo
+    void seeMinimumMatrix(){
+        system("eog graph_min_cost.png");
+    }
+};
+
+void menu(int n){
+    int option;
+    while(true){
+        cout << "Menú:\n";
+        cout << "1. Ingresar matriz de distancias manualmente.\n";
+        cout << "2. Usar matriz de ejemplo.\n";
+        cout << "3. Ver matriz de minimo.\n";
+        cout << "4. Ver matriz original.\n";
+        cout << "5. Salir.\n";
+        cout << "Ingrese una opción: ";
+        cin >> option;
+        // Opción de salida primero para evitar que se ejecute el resto del código
+        if(option == 5){
+            cout << "Saliendo...\n";
             return;
         }
-    }  
-}
-
-bool busca_caracter(char c, string vector[], int n) {
-  int j;
-  
-  for (j=0; j<n; j++) {
-    if (c == vector[j][0]) {
-      return true;
-    }
-  }
-  
-  return false;
-}
-
-// actualiza VS[] cada ve< que se agrega un elemento a S[].
-void actualizar_VS(string V[], string S[], string VS[], int n) {
-    int j;
-    int k = 0;
-
-    inicializar_vector_caracter(VS, n);
-
-    for (j=0; j<n; j++){
-        char c = V[j][0];
-        // por cada caracter de V[] evalua si está en S[],
-        // Sino está, lo agrega a VS[].
-        if (busca_caracter(c, S, n) != true) {
-            VS[k] = V[j];
-            k++;
+        if(option == 1){
+            // Se crea un objeto de la clase Graph con n nodos los otros son 5 por ejemplificar
+            Graph g(n);
+            g.readGraph(false);
+            g.generateOriginalGraph();
+            g.prim();
         }
-    }
-}
-
-int buscar_indice_caracter(string V[], char caracter, int n) {
-    int i;
-
-    for (i=0; i<n; i++) {
-        if (V[i][0] == caracter)
-            return i;
-    }
-
-    return i;
-}
-
-
-int elegir_vertice(string VS[], int D[], string V[], int n) {
-    int i = 0;
-    int menor = 0;
-    int peso;
-    char vertice;    
-    while (VS[i][0] != ' ') {
-        peso = D[buscar_indice_caracter(V, VS[i][0], n)];
-        // descarta valores infinitos (-1) y 0.
-        if ((peso != -1) && (peso != 0)) {
-            if (i == 0) {
-                menor = peso;
-                vertice = VS[i][0];
-            } else {
-                if (peso < menor) {
-                    menor = peso;
-                    vertice = VS[i][0];
-                }
-            }
-        } 
-        i++;
-    }
-
-    printf("\nvertice: %c\n\n", vertice);
-    return vertice;
-}
-
-// 
-int calcular_minimo(int dw, int dv, int mvw) {
-    int min = 0;
-    
-    if (dw == -1) {
-        if (dv != -1 && mvw != -1) {
-            min = dv + mvw;
-        } else {
-            min = dw;  // Mantiene el infinito
+        else if(option == 2){
+            Graph g(5);
+            g.readGraph(true);
+            g.generateOriginalGraph();
+            g.prim();
         }
-    } else {
-        if (dv != -1 && mvw != -1 && (dv + mvw < dw)) {
-            min = dv + mvw;
-        } else {
-            min = dw;  // Mantiene la distancia original
+        else if(option == 3){
+            // Se genera un constructor con 5 nodos para poder entrar al método
+            Graph g(5);
+            g.seeMinimumMatrix();
         }
-    }
-    
-    return min;
-}
-
-void actualizar_pesos(int D[], string VS[], int **M, string V[], char v, int n) {
-    // busca el indice v
-    int indice_v = buscar_indice_caracter(V, v, n);
-    
-    for (int i = 0; i < n; i++) {
-        if (VS[i][0] != ' ' && VS[i][0] != v) {
-            // busca el indice w, 
-            int indice_w = buscar_indice_caracter(V, VS[i][0], n);
-            D[indice_w] = calcular_minimo(D[indice_w], D[indice_v], M[indice_v][indice_w]);
+        else if(option == 4){
+            // Se genera un constructor con 5 nodos para poder entrar al método
+            Graph g(5);
+            g.seeOriginalMatrix();
         }
-    }
-}
-
-
-
-
-
-void aplicar_dijkstra(string V[], string S[], string VS[], int D[], int **M, int n) {
-    // iterador
-    int i;
-    // vertice escogido
-    char v;
-    
-    inicializar_vector_D(D, M, n);
-    cout << "Estados iniciales" << endl;
-    imprimir_matriz(M, n);
-    cout << "V" << endl;
-    imprimir_vector_caracter(V, n);
-    cout << "S" << endl;
-    imprimir_vector_caracter(S, n);
-    cout << "VS" << endl;
-    imprimir_vector_caracter(VS, n);
-    cout << "D" << endl;
-    imprimir_vector_entero(D, n);
-    cout << "--------------------" << endl;
-
-    // agrega primer véctice.
-    cout << "> agrega primer valor V[0] a S[] y actualiza VS[]\n\n" << endl; 
-    agrega_vertice_a_S(S, V[0][0], n);
-
-    cout << "S" << endl;
-    imprimir_vector_caracter(S, n);
-
-    actualizar_VS(V, S, VS, n);
-    cout << "VS" << endl;
-    imprimir_vector_caracter(VS, n);
-    cout << "D" << endl;
-    imprimir_vector_entero(D, n);
-
-    for (i = 1; i < n; i++)
-    {
-        // elige un vértice en v de VS[] tal que D[v] sea el mínimo 
-        cout << "\n> elige vertice menor en VS[] según valores en D[]\n" << endl;
-        cout << "> lo agrega a S[] y actualiza VS[]\n" << endl;
-        v = elegir_vertice(VS, D, V, n);
-        cout << "v es:" << v << endl;
-
-        //
-        agrega_vertice_a_S(S, v, n);
-        cout << "S" << endl;
-        
-        //
-        imprimir_vector_caracter(S, n);
-        actualizar_VS(V, S, VS, n);
-        
-        //
-        cout << "VS" << endl;
-        imprimir_vector_caracter(VS, n);
-        
-        // aquí falta actualizar los pesos y calcular el mínimo
-        actualizar_pesos(D, VS, M, V, v, n);
-        cout << "D" << endl;
-        imprimir_vector_entero(D, n);
-    }
-    
-}
-
-// hace el grafo y lo muestra
-void imprimir_grafo(int ** matriz, string vector[], int n) {
-    ofstream fp("grafo.txt");
-
-    fp << "digraph G {\n";
-    fp << "graph [rankdir=LR];\n";
-    fp << "node [style=filled fillcolor=yellow];\n";
-
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (i != j && matriz[i][j] > 0) {
-                // vector letra[i] -> vector letra[j] [etiqueta = dirección]
-                fp << vector[i] << " -> " << vector[j] << " [label=" << matriz[i][j] << "];\n";
-            }
+        else{
+            cout << "Opción no válida.\n";
         }
+    
+    }
+}   
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        cerr << "Uso: " << argv[0] << " <número de nodos>\n";
+        return 1;
     }
 
-    fp << "}\n";
-    fp.close();
-
-    system("dot -Tpng -ografo.png grafo.txt");
-    system("eog grafo.png &");
-}
-
-//
-int main(int argc, char **argv) {
-    // número de elementos.
-    int n;
-    // opción de como se colocan los nodos
-    int opc;
-    
-    printf("No lo hice, lo iba a hacer en base al dijkstra pero no lo he logrado entender");
-    return 0;
-
-    // valida cantidad de parámetros mínimos.
-    if (argc < 2) {
-        cout << "Uso: \n./matriz n" << endl;
-        return -1;
+    int n = stoi(argv[1]);
+    if (n < 2) {
+        cerr << "El número de nodos debe ser mayor o igual a 2.\n";
+        return 1;
     }
     
-    // convierte string a entero.
-    n = atoi(argv[1]);
-
-    // vectores, V -> vector de nodos, letras, S vector que recorre (el camino que recorre)
-    string V[n];
-    string S[n];
-    string VS[n];
-    // VS nodos que faltan por ver
-
-    // esta vinculado a la matriz, que es las distancia de los nodos
-    int D[n];
-
-    // inicializa e imprime vectores.
-    inicializar_vector_caracter(V, n);
-    inicializar_vector_caracter(S, n);
-    inicializar_vector_caracter(VS, n);
-
-    // basicamente crea letras con el código ascii respecto a las letras abecedario, hasta n
-    leer_nodos(V, n);
-
-
-    imprimir_vector_caracter(V, n);
-
-    // crea matriz nxn de enteros.
-    int **matriz;
-    matriz = new int*[n];
-    for(int i=0; i<n; i++)
-        matriz[i] = new int[n];
-
-    inicializar_matriz_enteros(matriz, n);
-    imprimir_matriz(matriz, n);
-
-    cout << "¿Desea agregar manualmente las relaciones de los nodos?\n[1] si, otro número no" << endl;
-    if (n==5)
-    {
-        cout << "[2] Si desea se puede usar los valores de prueba" << endl;
-
-    }
+    menu(n);
     
-    cin >> opc;
-    if (opc == 1)
-    {
-        cambio_manual_matriz_enteros(matriz, n, V);
-    }else if ( opc ==2 && n==5)
-    {
-        modo_prueba(matriz, n, V);
-    }else
-    {
-        /* random*/
-        cambio_random_matriz_enteros(matriz, n);
-    }
-    
-    imprimir_matriz(matriz, n);
-    
-    aplicar_dijkstra(V, S, VS, D, matriz, n);
-
-    imprimir_grafo(matriz, V, n);
     return 0;
 }
