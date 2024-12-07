@@ -1,0 +1,28 @@
+#cy {
+    width: 100%;
+    height: 800px;
+}
+nav{
+    background-color: black;
+}
+div{
+    background-color: white;
+}
+div.general{
+    background-color: bisque;
+}
+.brand-color{
+    color: #5ce1e6;
+}
+.brand-text{
+    margin-top: 10px;
+}
+div{
+    padding: 10px;
+    margin: 10px;
+}
+
+  
+.btn-outline-primary {
+    border-color: #5ce1e6;
+}

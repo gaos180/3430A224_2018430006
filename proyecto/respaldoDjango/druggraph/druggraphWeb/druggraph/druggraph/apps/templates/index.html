@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Druggraph</title>
+    {% load static %}
+    {% load django_bootstrap5 %}
+    {% bootstrap_css %}
+    <!-- Cargar el icono en el titulo -->
+    <link rel="shortcut icon" href="{% static 'img/logo.ico' %}">
+    <!-- Cargar el archivo de estilos -->
+    <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pridi:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/font.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/patron.css' %}">
+
+</head>
+<body>
+    <!-- Navbar contenido -->
+    <nav class="navbar bg-body-tertiary bg-dark " id="navBar">
+        <div class="container-fluid">
+            <a class="navbar-brand pridi-regular brand-color" href="{% url "index" %}">
+                <img src="{% static 'img/index/Logo_druggraph.png' %}" alt="Banner druggraph image" width="45" height="45" class="d-inline-block align-text-top">
+                <span class="brand-text">Druggraph</span>
+            </a>
+            
+            <a class="navbar-brand pridi-regular brand-color" href="{% url "interactions" %}">
+                <span>
+                    Buscar Fármacos-Target
+                </span>
+            </a>            
+        </div>
+      </nav>
+    <!-- Aviso de los derechos -->
+    <div class="position-relative general">
+        <span class="pridi-light">Plataforma de fármacos y targets usando la base de datos de DrugBank y grafos mediante cytoscape. Si desea la base de datos dirijase a DrugBank</span>
+    </div>
+    <!-- Carusel -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="caruselInicio" class="carousel carousel-dark slide">
+                    <div class="carousel-indicators">
+                      <button type="button" data-bs-target="#caruselInicio" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                      <button type="button" data-bs-target="#caruselInicio" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    </div>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active" data-bs-interval="10000">
+                            <img src="{% static 'img/index/paracetamol-inicio.png' %}" alt="grafo paracetamol-ibuprofeno-aspirina" class="d-block w-100">
+                            <div class="carousel-caption d-none d-md-block bg-dark ">
+                              <h5 class="text-white">Busca medicamentos para saber a que afectan</h5>
+                              <p class="text-white">Grafo representando las interacciones de paracetamol, ibuprofeno y aspirina</p>
+                            </div>
+                        </div>
+                        <div class="carousel-item" data-bs-interval="10000">
+                            <img src="{% static 'img/index/dolor-inicio.png' %}" alt="grafo dolor" class="d-block w-100">
+                            <div class="carousel-caption d-none d-md-block bg-dark ">
+                              <h5 class="text-white">Busca Target para saber que medicamentos le afectan</h5>
+                              <p class="text-white">Grafo representando que medicamentos afectan a un target del dolor</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#caruselInicio" data-bs-slide="prev">
+                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#caruselInicio" data-bs-slide="next">
+                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Next</span>
+                    </button>
+                  </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acerca de nosotros-->
+    
+
+    <!-- Columnas con head -->
+    <div class="container">
+        <!-- 3 headers -->
+        <!--
+            <div class="row">
+
+            <div class="col-lg-3">
+              <svg class="bd-placeholder-img rounded-circle" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect></svg>
+              <h2 class="fw-normal">Heading</h2>
+              <p>Some representative placeholder content for the three columns of text below the carousel. This is the first column.</p>
+              <p><a class="btn btn-secondary" href="#">View details »</a></p>
+            </div>
+            <div class="col-lg-3">
+              <svg class="bd-placeholder-img rounded-circle" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect></svg>
+              <h2 class="fw-normal">Heading</h2>
+              <p>Another exciting bit of representative placeholder content. This time, we've moved on to the second column.</p>
+              <p><a class="btn btn-secondary" href="#">View details »</a></p>
+            </div>
+            <div class="col-lg-3">
+              <svg class="bd-placeholder-img rounded-circle" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect></svg>
+              <h2 class="fw-normal">Heading</h2>
+              <p>And lastly this, the third column of representative placeholder content.</p>
+              <p><a class="btn btn-secondary" href="#">View details »</a></p>
+            </div>
+          </div>
+      
+
+        -->
+        
+      
+          <!-- Sobre nosotros hecho en base a una plantilla de bootstrap5 -->
+      
+          <hr class="featurette-divider">
+      
+          <div class="row featurette">
+            <div class="col-md-6">
+              <h2 class="featurette-heading fw-normal lh-1">Nuestra misión.<span class="text-body-secondary"> Sobre nosotros. </span></h2>
+              <p class="lead">
+                Nuestra misión es empoderar a los investigadores médicos proporcionándoles una herramienta intuitiva y poderosa para acelerar el descubrimiento de nuevos tratamientos. Al conectar de manera eficiente los fármacos con sus dianas moleculares, facilitamos el desarrollo de terapias más efectivas y personalizadas para pacientes de todo el mundo.
+              </p>
+            </div>
+            <div class="col-md-4">
+              <img src="{% static 'img/index/mision.png' %}" alt="mision-img" width="500" height="500" class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto">
+            </div>
+          </div>
+      
+          <hr class="featurette-divider">
+      
+          <div class="row featurette">
+            <div class="col-md-6 order-md-2">
+              <h2 class="featurette-heading fw-normal lh-1">Quiénes<span class="text-body-secondary"> Somos</span></h2>
+              <p class="lead">
+                Somos un grupo independiente que identificamos una necesidad en el campo de la investigación farmacéutica: la falta de herramientas eficientes para analizar grandes conjuntos de datos biológicos. Nuestra respuesta fue desarrollar una plataforma bioinformática que simplifica el proceso de descubrimiento de fármacos. Al ofrecer una solución a este problema, contribuimos a agilizar la investigación y a acelerar el desarrollo de nuevos tratamientos. 
+              </p>
+            </div>
+            <div class="col-md-4 order-md-1">
+              <img src="{% static 'img/index/group.png' %}" alt="mision-img" width="500" height="500" class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto rounder">
+            </div>
+          </div>
+      
+          <hr class="featurette-divider">
+      
+          <div class="row featurette">
+            <div class="col-md-6">
+              <h2 class="featurette-heading fw-normal lh-1">Contacta <span class="text-body-secondary"> con nosotros.</span></h2>
+              <p class="lead">
+                ¿Tienes preguntas sobre nuestra herramienta de visualización de grafos fármaco-diana? ¡Contáctanos! Estaremos encantados de ayudarte. en el siguiente correo: <a href="mailto:grojas18@alumnos.utalca.cl">grojas18@alumnos.utalca.cl</a></p>
+            </div>
+            <div class="col-md-4">
+              <img src="{% static 'img/index/robot.png' %}" alt="mision-img" width="500" height="500" class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto rounder">
+
+            </div>
+          </div>
+      
+          <hr class="featurette-divider">
+      
+          <!-- /END THE FEATURETTES -->
+      
+        
+    
+        
+    </div>
+    
+    <!-- Div donde se renderizará el gráfico de Cytoscape -->
+    <div class="container">
+        <div id="cy"></div>    
+    </div>
+
+    <footer class="container">
+      <p class="float-end"><a href="#navBar">Volver a inicio.</a></p>
+      <p class="text-white">© Druggraph Company, Inc. · Made using Drugbank: <a href="https://go.drugbank.com/"> Official Drugbank Page</a></p>
+    </footer>
+
+    <!-- Div donde se pide usando CDN para cargar cytoscape -->
+    <script src="https://unpkg.com/cytoscape@3.21.0/dist/cytoscape.min.js"></script>
+
+    <!-- Incluir el archivo cytoscape.min.js -->
+    <script src="{% static 'js/cytoscape.min.js' %}"></script>
+
+</body>
+{% bootstrap_javascript %}
+
+</html>

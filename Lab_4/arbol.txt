@@ -1,0 +1,37 @@
+digraph G {
+node [style=filled fillcolor="#FBFF76"];
+120->87;
+120->140;
+87->43;
+87->99;
+43->20;
+43->65;
+"20i"[shape=point];
+20->"20i";
+"20d"[shape=point];
+20->"20d";
+65->56;
+"65d"[shape=point];
+65->"65d";
+"56i"[shape=point];
+56->"56i";
+"56d"[shape=point];
+56->"56d";
+99->93;
+"99d"[shape=point];
+99->"99d";
+"93i"[shape=point];
+93->"93i";
+"93d"[shape=point];
+93->"93d";
+140->130;
+"140d"[shape=point];
+140->"140d";
+"130i"[shape=point];
+130->"130i";
+130->135;
+"135i"[shape=point];
+135->"135i";
+"135d"[shape=point];
+135->"135d";
+}
